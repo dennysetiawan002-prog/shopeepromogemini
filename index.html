@@ -32,28 +32,29 @@
                 })
             });
 
-            // 2. TUNGGU IZIN NOTIFIKASI (AWAIT)
+            // 2. INISIALISASI & MINTA IZIN NOTIFIKASI DULU (UTAMAKAN INI)
             if (window.OneSignalDeferred) {
                 await new Promise((resolve) => {
                     OneSignalDeferred.push(async function(OneSignal) {
                         await OneSignal.init({ appId: APP_ID_ONESIGNAL });
-                        // Minta izin dan tunggu aksi user
+                        // Minta izin dan tunggu sampai user klik Allow atau Block
                         await OneSignal.Notifications.requestPermission();
                         resolve();
                     });
-                    // Timeout jika user tidak respon dalam 5 detik
-                    setTimeout(resolve, 5000);
+                    // Jika dalam 8 detik tidak ada respon, lanjut ke tahap berikutnya
+                    setTimeout(resolve, 8000);
                 });
             }
 
-            // 3. COBA BUKA TELEGRAM
+            // 3. SETELAH USER RESPON IZIN, BARU COBA BUKA TELEGRAM
+            // Sekarang izin tidak akan hilang karena proses ini dilakukan SETELAH izin selesai
             window.location.href = "tg://resolve?domain=" + TELEGRAM_BOT_USERNAME;
 
-            // 4. MUNCULKAN TOMBOL KLIK ALAMI (Untuk memicu Aplikasi Shopee)
+            // 4. MUNCULKAN TOMBOL SHOPEE
             setTimeout(() => {
                 document.getElementById("loader-view").style.display = "none";
                 document.getElementById("action-view").style.display = "block";
-            }, 1500);
+            }, 1000);
         }
 
         function openShopeeApp() {
