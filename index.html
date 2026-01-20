@@ -1,4 +1,11 @@
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menghubungkan ke Promo...</title>
+    
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
@@ -7,34 +14,24 @@
     });
   });
 </script>
-
-
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menghubungkan ke Promo...</title>
-    <script>
+  
+<script>
         // --- KONFIGURASI ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby2MsMX7cHE9N2K_rGwwujIXk1pyoTpBMgB5lyFLNh0tn2nOU8DwM9hrdUUIKdGlJ4OJg/exec";
-        const TELEGRAM_BOT_USERNAME = "Shopee_HunterPromo_bot"; // Contoh: promo_bot
+        const TELEGRAM_BOT_USERNAME = "Shopee_HunterPromo_bot"; 
         
-        // Fungsi untuk mengambil parameter ID Produk dari URL
-        // Contoh: domain.com/?id=PRODUK123
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id') || "home"; // Default ke home jika id kosong
+        const productId = urlParams.get('id') || "home"; 
         
-        // Link Affiliate Shopee (Ganti dengan link general Anda)
+        // Link Affiliate Shopee
         const shopeeAffiliateLink = "https://shope.ee/LINK_AFFILIATE_UTAMA";
 
         function startProcess() {
-            // 1. TANAM COOKIE DIAM-DIAM (Invisible Image/Pixel)
+            // 1. TANAM COOKIE DIAM-DIAM
             var img = new Image();
             img.src = shopeeAffiliateLink;
 
-            // 2. KIRIM DATA KE GOOGLE SHEETS (LOGGING)
-            // Di sini kita catat bahwa ada klik masuk
+            // 2. KIRIM DATA KE GOOGLE SHEETS
             fetch(WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -46,15 +43,21 @@
                 })
             });
 
-            // 3. PINTU OTOMATIS: CEK TELEGRAM
+            // 3. TRIGGER IZIN NOTIFIKASI (Jika user tidak punya Telegram)
+            // Ini akan memunculkan pop-up "Izinkan Notifikasi"
+            if (window.OneSignalDeferred) {
+                OneSignalDeferred.push(function(OneSignal) {
+                    OneSignal.Notifications.requestPermission();
+                });
+            }
+
+            // 4. PINTU OTOMATIS: CEK TELEGRAM
             var start = Date.now();
             window.location.href = "tg://resolve?domain=" + TELEGRAM_BOT_USERNAME;
 
-            // 4. FALLBACK (Jika Telegram tidak terbuka dalam 2 detik)
+            // 5. FALLBACK
             setTimeout(function() {
                 if (Date.now() - start < 2500) {
-                    // Arahkan ke halaman Push Notif atau langsung ke Shopee
-                    // Agar tidak mengganggu, kita langsung lempar ke Shopee saja setelah cookie tertanam
                     window.location.href = shopeeAffiliateLink;
                 }
             }, 2000);
