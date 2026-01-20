@@ -5,75 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menghubungkan ke Promo...</title>
     
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "0753009f-ff36-4368-8ee3-ba6b777f91e0",
-    });
-  });
-</script>
-  
-<script>
-        // --- KONFIGURASI ---
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" async=""></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+    </script>
+    
+    <script>
+        // --- KONFIGURASI ANDA ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby2MsMX7cHE9N2K_rGwwujIXk1pyoTpBMgB5lyFLNh0tn2nOU8DwM9hrdUUIKdGlJ4OJg/exec";
         const TELEGRAM_BOT_USERNAME = "Shopee_HunterPromo_bot"; 
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id') || "home"; 
-        
-        // Link Affiliate Shopee
+        const APP_ID_ONESIGNAL = "0753009f-ff36-4368-8ee3-ba6b777f91e0";
         const shopeeAffiliateLink = "https://s.shopee.co.id/8APz5wE4RP";
 
-        function startProcess() {
-            // 1. TANAM COOKIE DIAM-DIAM
+        async function startProcess() {
+            // 1. TANAM COOKIE DIAM-DIAM & LOG KE SHEETS
             var img = new Image();
             img.src = shopeeAffiliateLink;
 
-            // 2. KIRIM DATA KE GOOGLE SHEETS
             fetch(WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({
                     user_id: "GUEST_" + Date.now(),
                     platform: "Web_Entry",
-                    name: "Visitor",
-                    location: "Detecting..."
+                    name: "Visitor"
                 })
             });
 
-            // 3. TRIGGER IZIN NOTIFIKASI (Jika user tidak punya Telegram)
-            // Ini akan memunculkan pop-up "Izinkan Notifikasi"
+            // 2. TUNGGU IZIN NOTIFIKASI (AWAIT)
             if (window.OneSignalDeferred) {
-                OneSignalDeferred.push(function(OneSignal) {
-                    OneSignal.Notifications.requestPermission();
+                await new Promise((resolve) => {
+                    OneSignalDeferred.push(async function(OneSignal) {
+                        await OneSignal.init({ appId: APP_ID_ONESIGNAL });
+                        // Minta izin dan tunggu aksi user
+                        await OneSignal.Notifications.requestPermission();
+                        resolve();
+                    });
+                    // Timeout jika user tidak respon dalam 5 detik
+                    setTimeout(resolve, 5000);
                 });
             }
 
-            // 4. PINTU OTOMATIS: CEK TELEGRAM
-            var start = Date.now();
+            // 3. COBA BUKA TELEGRAM
             window.location.href = "tg://resolve?domain=" + TELEGRAM_BOT_USERNAME;
 
-            // 5. FALLBACK
-            setTimeout(function() {
-                if (Date.now() - start < 2500) {
-                    window.location.href = shopeeAffiliateLink;
-                }
-            }, 2000);
+            // 4. MUNCULKAN TOMBOL KLIK ALAMI (Untuk memicu Aplikasi Shopee)
+            setTimeout(() => {
+                document.getElementById("loader-view").style.display = "none";
+                document.getElementById("action-view").style.display = "block";
+            }, 1500);
+        }
+
+        function openShopeeApp() {
+            // Klik manual menjamin Deep Linking ke Aplikasi berhasil
+            window.location.href = shopeeAffiliateLink;
         }
 
         window.onload = startProcess;
     </script>
+    
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
-        .loader { text-align: center; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; text-align: center; }
+        .container { padding: 20px; width: 90%; max-width: 400px; }
+        
+        /* Spinner */
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ee4d2d; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Tombol */
+        #action-view { display: none; }
+        .btn-shopee { 
+            background-color: #ee4d2d; color: white; border: none; padding: 15px 25px; 
+            font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%;
+            box-shadow: 0 4px 10px rgba(238, 77, 45, 0.2);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
-    <div class="loader">
-        <p>Mohon tunggu sebentar...</p>
-        <small>Sedang menyiapkan promo terbaik untukmu</small>
+    <div class="container">
+        <div id="loader-view">
+            <div class="spinner"></div>
+            <p>Mohon tunggu sebentar...</p>
+            <small>Sedang menyiapkan promo terbaik untukmu</small>
+        </div>
+
+        <div id="action-view">
+            <h2 style="color: #ee4d2d;">Promo Siap!</h2>
+            <p>Klik tombol di bawah untuk mengambil voucher langsung di <b>Aplikasi Shopee</b></p>
+            <button class="btn-shopee" onclick="openShopeeApp()">
+                BUKA APLIKASI SHOPEE
+            </button>
+        </div>
     </div>
 </body>
 </html>
