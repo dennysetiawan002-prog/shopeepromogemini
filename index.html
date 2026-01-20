@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menghubungkan ke Promo...</title>
+    <script>
+        // --- KONFIGURASI ---
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby2MsMX7cHE9N2K_rGwwujIXk1pyoTpBMgB5lyFLNh0tn2nOU8DwM9hrdUUIKdGlJ4OJg/exec";
+        const TELEGRAM_BOT_USERNAME = "Shopee_HunterPromo_bot"; // Contoh: promo_bot
+        
+        // Fungsi untuk mengambil parameter ID Produk dari URL
+        // Contoh: domain.com/?id=PRODUK123
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id') || "home"; // Default ke home jika id kosong
+        
+        // Link Affiliate Shopee (Ganti dengan link general Anda)
+        const shopeeAffiliateLink = "https://shope.ee/LINK_AFFILIATE_UTAMA";
+
+        function startProcess() {
+            // 1. TANAM COOKIE DIAM-DIAM (Invisible Image/Pixel)
+            var img = new Image();
+            img.src = shopeeAffiliateLink;
+
+            // 2. KIRIM DATA KE GOOGLE SHEETS (LOGGING)
+            // Di sini kita catat bahwa ada klik masuk
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    user_id: "GUEST_" + Date.now(),
+                    platform: "Web_Entry",
+                    name: "Visitor",
+                    location: "Detecting..."
+                })
+            });
+
+            // 3. PINTU OTOMATIS: CEK TELEGRAM
+            var start = Date.now();
+            window.location.href = "tg://resolve?domain=" + TELEGRAM_BOT_USERNAME;
+
+            // 4. FALLBACK (Jika Telegram tidak terbuka dalam 2 detik)
+            setTimeout(function() {
+                if (Date.now() - start < 2500) {
+                    // Arahkan ke halaman Push Notif atau langsung ke Shopee
+                    // Agar tidak mengganggu, kita langsung lempar ke Shopee saja setelah cookie tertanam
+                    window.location.href = shopeeAffiliateLink;
+                }
+            }, 2000);
+        }
+
+        window.onload = startProcess;
+    </script>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f4f4; }
+        .loader { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <p>Mohon tunggu sebentar...</p>
+        <small>Sedang menyiapkan promo terbaik untukmu</small>
+    </div>
+</body>
+</html>
